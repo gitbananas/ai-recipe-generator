@@ -28,11 +28,27 @@
       },
     };
   }
-  
-  export function response(ctx) {
-    const parsedBody = JSON.parse(ctx.result.body);
-    return {
-      body: parsedBody.content[0].text,
-    };
+
+    export function response(ctx) {
+      try {
+        const parsedBody = JSON.parse(ctx.result.body);
+        
+        // Add null checks and proper error handling
+        if (!parsedBody || !parsedBody.content || !Array.isArray(parsedBody.content) || !parsedBody.content[0]) {
+          return {
+            body: "Unable to generate recipe. Please try again with different ingredients.",
+          };
+        }
+    
+        return {
+          body: parsedBody.content[0].text,
+        };
+      } catch (error) {
+        return {
+          body: "Error processing the response. Please try again.",
+        };
+      }
+    }
+
   }
   

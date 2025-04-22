@@ -39,17 +39,18 @@ function App() {
         .map(i => i.trim())
         .filter(i => i.length > 0);
   
-      const { data, errors } = await amplifyClient.queries.askBedrock({
+      const response = await amplifyClient.queries.askBedrock({
         ingredients,
       });
   
-      if (errors) {
-        throw new Error(errors.map(e => e.message).join(', '));
+      if (!response || !response.data) {
+        throw new Error("Failed to get a response from the service");
       }
   
-      setResult(data?.body || "No recipe could be generated. Please try different ingredients.");
+      setResult(response.data.body || "No recipe could be generated. Please try different ingredients.");
   
     } catch (e) {
+      console.error('Error:', e); // Add logging for debugging
       setResult(`Error: ${e instanceof Error ? e.message : 'An unexpected error occurred'}`);
     } finally {
       setLoading(false);
