@@ -22,27 +22,40 @@ function App() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
-
+    setResult(''); // Clear previous results
+  
     try {
       const formData = new FormData(event.currentTarget);
+      const ingredientsString = formData.get("ingredients")?.toString() || "";
       
-      const { data, errors } = await amplifyClient.queries.askBedrock({
-        ingredients: [formData.get("ingredients")?.toString() || ""],
-      });
-
-      if (!errors) {
-        setResult(data?.body || "No data returned");
-      } else {
-        console.log(errors);
+      // Input validation
+      if (!ingredientsString.trim()) {
+        throw new Error("Please enter at least one ingredient");
       }
-
+  
+      // Split ingredients properly
+      const ingredients = ingredientsString
+        .split(',')
+        .map(i => i.trim())
+        .filter(i => i.length > 0);
+  
+      const { data, errors } = await amplifyClient.queries.askBedrock({
+        ingredients,
+      });
+  
+      if (errors) {
+        throw new Error(errors.map(e => e.message).join(', '));
+      }
+  
+      setResult(data?.body || "No recipe could be generated. Please try different ingredients.");
   
     } catch (e) {
-      alert(`An error occurred: ${e}`);
+      setResult(`Error: ${e instanceof Error ? e.message : 'An unexpected error occurred'}`);
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="app-container">
@@ -82,7 +95,9 @@ function App() {
             <Placeholder size="large" />
           </div>
         ) : (
-          result && <p className="result">{result}</p>
+          <div className="recipe-result">
+            {result && <pre>{result}</pre>}
+          </div>
         )}
       </div>
     </div>
