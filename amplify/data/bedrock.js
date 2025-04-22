@@ -1,12 +1,10 @@
-export function request(ctx) {
+  export function request(ctx) {
     const { ingredients = [] } = ctx.args;
-  
-    // Construct the prompt with the provided ingredients
+    
     const prompt = `Suggest a recipe idea using these ingredients: ${ingredients.join(", ")}.`;
-  
-    // Return the request configuration
+    
     return {
-      resourcePath: `/model/anthropic.claude-3-7-sonnet-20250219-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-7-sonnet-20250219-v1:0/invoke`,  // Update with correct model ID
       method: "POST",
       params: {
         headers: {
@@ -21,23 +19,20 @@ export function request(ctx) {
               content: [
                 {
                   type: "text",
-                  text: `\n\nHuman: ${prompt}\n\nAssistant:`,
-                },
-              ],
-            },
-          ],
+                  text: prompt
+                }
+              ]
+            }
+          ]
         }),
       },
     };
   }
   
   export function response(ctx) {
-    // Parse the response body
     const parsedBody = JSON.parse(ctx.result.body);
-    // Extract the text content from the response
-    const res = {
+    return {
       body: parsedBody.content[0].text,
     };
-    // Return the response
-    return res;
   }
+  
